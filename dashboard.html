@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Google Ads Pixel System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div id="root"></div>
+
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script type="text/babel">
+        // ============================================
+        // CONFIG PADRÃO
+        // ============================================
+        const DEFAULT_CONFIG = {
+            conversionId: 'AW-123456789',
+            conversionLabel: 'AbC123DeFg_K',
+            redirectUrl: 'https://seusite.com/produto',
+            purchaseValue: '99.90',
+            currency: 'BRL',
+            companyName: 'Sua Empresa',
+            delayRedirect: 3000,
+            avatarText: 'Processando sua compra...',
+        };
+
+        function Dashboard() {
+            const [config, setConfig] = React.useState(DEFAULT_CONFIG);
+            const [saved, setSaved] = React.useState(false);
+            const [loading, setLoading] = React.useState(true);
+
+            React.useEffect(() => {
+                // Carrega configurações da API
+                fetch('/api/config')
+                    .then(res => res.json())
+                    .then(data => {
+                        setConfig(data);
+                        setLoading(false);
+                    })
+                    .catch(err => {
+                        console.error('Erro ao carregar config:', err);
+                        setLoading(false);
+                    });
+            }, []);
+
+            const handleInputChange = (field, value) => {
+                setConfig(prev => ({
+                    ...prev,
+                    [field]: value
+                }));
+            };
+
+            const handleSave = async () => {
+                try {
+                    const response = await fetch('/api/config', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(config)
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        setSaved(true);
+                        setTimeout(() => setSaved(false), 3000);
+                    }
+                } catch (error) {
+                    console.error('Erro ao salvar:', error);
+                    alert('Erro ao salvar configurações');
+                }
+            };
+
+            const handleReset = async () => {
+                if (confirm('Deseja restaurar os valores padrão?')) {
+                    try {
+                        const response = await fetch('/api/config/reset', {
+                            method: 'POST'
+                        });
+                        const result = await response.json();
+                        if (result.success) {
+                            setConfig(result.config);
+                            setSaved(true);
+                            setTimeout(() => setSaved(false), 3000);
+                        }
+                    } catch (error) {
+                        console.error('Erro ao resetar:', error);
+                        alert('Erro ao resetar configurações');
+                    }
+                }
+            };
+
+            const getThankyouUrl = () => {
+                const baseUrl = window.location.origin + window.location.pathname.replace('dashboard.html', 'thankyou.html');
+                return baseUrl;
+            };
+
+            return (
+                <div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+                    <div class="max-w-4xl mx-auto">
+                        {/* Header */}
+                        <div class="mb-8">
+                            <h1 class="text-4xl font-bold text-gray-900 mb-2">Dashboard</h1>
+                            <p class="text-gray-600">Gerencie as configurações da sua página de compra</p>
+                        </div>
+
+                        {/* Success Message */}
+                        {saved && (
+                            <div class="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg animate-fade-in">
+                                ✅ Configurações salvas com sucesso!
+                            </div>
+                        )}
+
+                        {/* Main Card */}
+                        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                            <div class="p-8">
+                                <div class="space-y-6">
+                                    {/* Google Ads Section */}
+                                    <div class="border-b pb-6">
+                                        <h2 class="text-2xl font-bold text-gray-900 mb-4">Google Ads</h2>
+
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {/* Conversion ID */}
+                                            <div>
+                                                <label class="block text-sm font-semibold text-gray-900 mb-2">
+                                                    Conversion ID
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={config.conversionId}
+                                                    onChange={(e) => handleInputChange('conversionId', e.target.value)}
+                                                    placeholder="AW-123456789"
+                                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+                                                />
+                                                <p class="text-xs text-gray-500 mt-1">Formato: AW-xxxxx</p>
+                                            </div>
+
+                                            {/* Conversion Label */}
+                                            <div>
+                                                <label class="block text-sm font-semibold text-gray-900 mb-2">
+                                                    Conversion Label
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={config.conversionLabel}
+                                                    onChange={(e) => handleInputChange('conversionLabel', e.target.value)}
+                                                    placeholder="AbC123DeFg_K"
+                                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+                                                />
+                                                <p class="text-xs text-gray-500 mt-1">Label da conversão purchase</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Redirect Section */}
+                                    <div class="border-b pb-6">
+                                        <h2 class="text-2xl font-bold text-gray-900 mb-4">Redirecionamento</h2>
+
+                                        <div>
+                                            <label class="block text-sm font-semibold text-gray-900 mb-2">
+                                                URL de Redirecionamento
+                                            </label>
+                                            <input
+                                                type="url"
+                                                value={config.redirectUrl}
+                                                onChange={(e) => handleInputChange('redirectUrl', e.target.value)}
+                                                placeholder="https://seusite.com/produto"
+                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                            />
+                                            <p class="text-xs text-gray-500 mt-1">Para onde o cliente será redirecionado após a compra</p>
+                                        </div>
+
+                                        <div class="mt-4">
+                                            <label class="block text-sm font-semibold text-gray-900 mb-2">
+                                                Tempo para Redirecionar (ms)
+                                            </label>
+                                            <input
+                                                type="number"
+                                                value={config.delayRedirect}
+                                                onChange={(e) => handleInputChange('delayRedirect', parseInt(e.target.value))}
+                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                            />
+                                            <p class="text-xs text-gray-500 mt-1">3000 = 3 segundos</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Purchase Section */}
+                                    <div class="border-b pb-6">
+                                        <h2 class="text-2xl font-bold text-gray-900 mb-4">Compra</h2>
+
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {/* Purchase Value */}
+                                            <div>
+                                                <label class="block text-sm font-semibold text-gray-900 mb-2">
+                                                    Valor da Compra
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    step="0.01"
+                                                    value={config.purchaseValue}
+                                                    onChange={(e) => handleInputChange('purchaseValue', e.target.value)}
+                                                    placeholder="99.90"
+                                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                                />
+                                            </div>
+
+                                            {/* Currency */}
+                                            <div>
+                                                <label class="block text-sm font-semibold text-gray-900 mb-2">
+                                                    Moeda
+                                                </label>
+                                                <select
+                                                    value={config.currency}
+                                                    onChange={(e) => handleInputChange('currency', e.target.value)}
+                                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                                >
+                                                    <option value="BRL">BRL - Real</option>
+                                                    <option value="USD">USD - Dólar</option>
+                                                    <option value="EUR">EUR - Euro</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Page Section */}
+                                    <div class="border-b pb-6">
+                                        <h2 class="text-2xl font-bold text-gray-900 mb-4">Página de Compra</h2>
+
+                                        <div>
+                                            <label class="block text-sm font-semibold text-gray-900 mb-2">
+                                                Texto do Avatar
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={config.avatarText}
+                                                onChange={(e) => handleInputChange('avatarText', e.target.value)}
+                                                placeholder="Processando sua compra..."
+                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                            />
+                                            <p class="text-xs text-gray-500 mt-1">Texto exibido abaixo do avatar</p>
+                                        </div>
+
+                                        <div class="mt-4">
+                                            <label class="block text-sm font-semibold text-gray-900 mb-2">
+                                                Nome da Empresa
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={config.companyName}
+                                                onChange={(e) => handleInputChange('companyName', e.target.value)}
+                                                placeholder="Sua Empresa"
+                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Links Section */}
+                                    <div>
+                                        <h2 class="text-2xl font-bold text-gray-900 mb-4">Links</h2>
+
+                                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
+                                            <div>
+                                                <p class="text-sm text-gray-600 mb-2"><strong>Página de Compra:</strong></p>
+                                                <code class="text-xs bg-white px-3 py-2 rounded border border-gray-300 block overflow-auto text-blue-600">
+                                                    {getThankyouUrl()}
+                                                </code>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Action Buttons */}
+                                    <div class="flex gap-3 pt-6 border-t">
+                                        <button
+                                            onClick={handleSave}
+                                            class="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition"
+                                        >
+                                            💾 Salvar Configurações
+                                        </button>
+                                        <button
+                                            onClick={handleReset}
+                                            class="flex-1 bg-gray-400 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg transition"
+                                        >
+                                            🔄 Restaurar Padrão
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div class="mt-8 text-center text-gray-600 text-sm">
+                            <p>Google Ads Pixel System</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<Dashboard />, document.getElementById('root'));
+    </script>
+</body>
+</html>
