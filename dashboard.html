@@ -235,19 +235,38 @@
                                     <div class="border-b pb-6">
                                         <h2 class="text-2xl font-bold text-gray-900 mb-4">Redirecionamento</h2>
 
-                                        <div class="flex items-center gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg mb-4">
-                                            <input
-                                                type="checkbox"
-                                                checked={config.autoRedirect}
-                                                onChange={(e) => handleInputChange('autoRedirect', e.target.checked)}
-                                                class="w-5 h-5 text-blue-600 rounded cursor-pointer"
-                                            />
-                                            <label class="flex-1 text-sm font-semibold text-gray-900 cursor-pointer">
-                                                Redirecionar automaticamente {config.autoRedirect ? '(Ativado)' : '(Desativado)'}
+                                        <div class="mb-4">
+                                            <label class="block text-sm font-semibold text-gray-900 mb-3">
+                                                Redirecionamento Automático
                                             </label>
-                                            <span class="text-xs text-gray-600">{config.autoRedirect ? '✅' : '⏸️'}</span>
+                                            <div class="flex items-center gap-4">
+                                                {/* Toggle Switch */}
+                                                <button
+                                                    onClick={() => handleInputChange('autoRedirect', !config.autoRedirect)}
+                                                    class={`relative inline-flex h-10 w-20 items-center rounded-full transition-colors ${
+                                                        config.autoRedirect ? 'bg-green-500' : 'bg-red-500'
+                                                    }`}
+                                                >
+                                                    <span
+                                                        class={`inline-block h-8 w-8 transform rounded-full bg-white transition-transform ${
+                                                            config.autoRedirect ? 'translate-x-1' : 'translate-x-10'
+                                                        }`}
+                                                    />
+                                                </button>
+                                                {/* Status Text */}
+                                                <div>
+                                                    <span class={`text-sm font-bold ${config.autoRedirect ? 'text-green-600' : 'text-red-600'}`}>
+                                                        {config.autoRedirect ? '🟢 Ativado' : '🔴 Desativado'}
+                                                    </span>
+                                                    <p class="text-xs text-gray-600 mt-1">
+                                                        {config.autoRedirect ? 'Redireciona após compra' : 'Fica na página para testar'}
+                                                    </p>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <p class="text-xs text-gray-600 mb-4">Desative para testar o pixel com Google Tag Assistant</p>
+                                        <p class="text-xs text-gray-500 mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                                            💡 Desative para testar o pixel com Google Tag Assistant
+                                        </p>
 
                                         <div>
                                             <label class="block text-sm font-semibold text-gray-900 mb-2">
