@@ -34,6 +34,7 @@
             delayRedirect: 3000,
             avatarText: 'Processando sua compra...',
             avatarImage: null,
+            autoRedirect: true,
         };
 
         function Toast({ message, type, onClose }) {
@@ -233,6 +234,20 @@
                                     {/* Redirect Section */}
                                     <div class="border-b pb-6">
                                         <h2 class="text-2xl font-bold text-gray-900 mb-4">Redirecionamento</h2>
+
+                                        <div class="flex items-center gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg mb-4">
+                                            <input
+                                                type="checkbox"
+                                                checked={config.autoRedirect}
+                                                onChange={(e) => handleInputChange('autoRedirect', e.target.checked)}
+                                                class="w-5 h-5 text-blue-600 rounded cursor-pointer"
+                                            />
+                                            <label class="flex-1 text-sm font-semibold text-gray-900 cursor-pointer">
+                                                Redirecionar automaticamente {config.autoRedirect ? '(Ativado)' : '(Desativado)'}
+                                            </label>
+                                            <span class="text-xs text-gray-600">{config.autoRedirect ? '✅' : '⏸️'}</span>
+                                        </div>
+                                        <p class="text-xs text-gray-600 mb-4">Desative para testar o pixel com Google Tag Assistant</p>
 
                                         <div>
                                             <label class="block text-sm font-semibold text-gray-900 mb-2">

@@ -49,6 +49,7 @@ const initDatabase = async () => {
                 delay_redirect INTEGER NOT NULL,
                 avatar_text VARCHAR(500) NOT NULL,
                 avatar_image TEXT,
+                auto_redirect BOOLEAN DEFAULT true,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
@@ -111,6 +112,7 @@ app.get('/api/config', async (req, res) => {
             delayRedirect: row.delay_redirect,
             avatarText: row.avatar_text,
             avatarImage: row.avatar_image,
+            autoRedirect: row.auto_redirect,
         });
     } catch (error) {
         console.error('Erro ao buscar config:', error);
@@ -133,6 +135,7 @@ app.post('/api/config', async (req, res) => {
             delayRedirect,
             avatarText,
             avatarImage,
+            autoRedirect,
         } = req.body;
 
         console.log('Valores extraídos:', {
@@ -144,8 +147,8 @@ app.post('/api/config', async (req, res) => {
             `INSERT INTO pixel_config (
                 conversion_id, conversion_label, redirect_url,
                 purchase_value, currency, company_name,
-                delay_redirect, avatar_text, avatar_image, updated_at
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
+                delay_redirect, avatar_text, avatar_image, auto_redirect, updated_at
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
             RETURNING *`,
             [
                 conversionId,
@@ -157,6 +160,7 @@ app.post('/api/config', async (req, res) => {
                 delayRedirect,
                 avatarText,
                 avatarImage || null,
+                autoRedirect !== false,
             ]
         );
 
@@ -173,6 +177,7 @@ app.post('/api/config', async (req, res) => {
                 delayRedirect: row.delay_redirect,
                 avatarText: row.avatar_text,
                 avatarImage: row.avatar_image,
+                autoRedirect: row.auto_redirect,
             },
         });
     } catch (error) {
@@ -188,8 +193,8 @@ app.post('/api/config/reset', async (req, res) => {
             `INSERT INTO pixel_config (
                 conversion_id, conversion_label, redirect_url,
                 purchase_value, currency, company_name,
-                delay_redirect, avatar_text, avatar_image, updated_at
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NULL, NOW())
+                delay_redirect, avatar_text, avatar_image, auto_redirect, updated_at
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NULL, true, NOW())
             RETURNING *`,
             [
                 DEFAULT_CONFIG.conversionId,
@@ -203,7 +208,7 @@ app.post('/api/config/reset', async (req, res) => {
             ]
         );
 
-        res.json({ success: true, config: { ...DEFAULT_CONFIG, avatarImage: null } });
+        res.json({ success: true, config: { ...DEFAULT_CONFIG, avatarImage: null, autoRedirect: true } });
     } catch (error) {
         console.error('Erro ao resetar config:', error);
         res.status(400).json({ success: false, error: error.message });

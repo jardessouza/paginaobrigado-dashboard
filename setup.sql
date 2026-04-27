@@ -13,6 +13,7 @@ CREATE TABLE pixel_config (
     delay_redirect INTEGER NOT NULL,
     avatar_text VARCHAR(500) NOT NULL,
     avatar_image TEXT,
+    auto_redirect BOOLEAN DEFAULT true,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
