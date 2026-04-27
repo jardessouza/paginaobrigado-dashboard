@@ -65,6 +65,8 @@ app.get('/api/config', async (req, res) => {
 // POST salvar configurações
 app.post('/api/config', async (req, res) => {
     try {
+        console.log('POST /api/config recebido:', req.body);
+
         const {
             conversionId,
             conversionLabel,
@@ -75,6 +77,11 @@ app.post('/api/config', async (req, res) => {
             delayRedirect,
             avatarText,
         } = req.body;
+
+        console.log('Valores extraídos:', {
+            conversionId, conversionLabel, redirectUrl, purchaseValue,
+            currency, companyName, delayRedirect, avatarText
+        });
 
         const result = await pool.query(
             `INSERT INTO pixel_config (
