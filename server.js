@@ -60,6 +60,19 @@ const initDatabase = async () => {
             ON pixel_config(updated_at DESC);
         `);
 
+        // Adicionar coluna auto_redirect se não existir
+        try {
+            await pool.query(`
+                ALTER TABLE pixel_config
+                ADD COLUMN auto_redirect BOOLEAN DEFAULT true;
+            `);
+        } catch (err) {
+            // Coluna já existe, ignorar erro
+            if (!err.message.includes('already exists')) {
+                console.error('Erro ao adicionar coluna auto_redirect:', err);
+            }
+        }
+
         const result = await pool.query('SELECT COUNT(*) FROM pixel_config');
         if (result.rows[0].count === '0') {
             await pool.query(`
