@@ -55,6 +55,7 @@ app.get('/api/config', async (req, res) => {
             companyName: row.company_name,
             delayRedirect: row.delay_redirect,
             avatarText: row.avatar_text,
+            avatarImage: row.avatar_image,
         });
     } catch (error) {
         console.error('Erro ao buscar config:', error);
@@ -76,6 +77,7 @@ app.post('/api/config', async (req, res) => {
             companyName,
             delayRedirect,
             avatarText,
+            avatarImage,
         } = req.body;
 
         console.log('Valores extraídos:', {
@@ -87,8 +89,8 @@ app.post('/api/config', async (req, res) => {
             `INSERT INTO pixel_config (
                 conversion_id, conversion_label, redirect_url,
                 purchase_value, currency, company_name,
-                delay_redirect, avatar_text, updated_at
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+                delay_redirect, avatar_text, avatar_image, updated_at
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
             RETURNING *`,
             [
                 conversionId,
@@ -99,6 +101,7 @@ app.post('/api/config', async (req, res) => {
                 companyName,
                 delayRedirect,
                 avatarText,
+                avatarImage || null,
             ]
         );
 
@@ -114,6 +117,7 @@ app.post('/api/config', async (req, res) => {
                 companyName: row.company_name,
                 delayRedirect: row.delay_redirect,
                 avatarText: row.avatar_text,
+                avatarImage: row.avatar_image,
             },
         });
     } catch (error) {
@@ -129,8 +133,8 @@ app.post('/api/config/reset', async (req, res) => {
             `INSERT INTO pixel_config (
                 conversion_id, conversion_label, redirect_url,
                 purchase_value, currency, company_name,
-                delay_redirect, avatar_text, updated_at
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+                delay_redirect, avatar_text, avatar_image, updated_at
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NULL, NOW())
             RETURNING *`,
             [
                 DEFAULT_CONFIG.conversionId,
@@ -144,7 +148,7 @@ app.post('/api/config/reset', async (req, res) => {
             ]
         );
 
-        res.json({ success: true, config: DEFAULT_CONFIG });
+        res.json({ success: true, config: { ...DEFAULT_CONFIG, avatarImage: null } });
     } catch (error) {
         console.error('Erro ao resetar config:', error);
         res.status(400).json({ success: false, error: error.message });

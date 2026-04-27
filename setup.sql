@@ -12,6 +12,7 @@ CREATE TABLE pixel_config (
     company_name VARCHAR(255) NOT NULL,
     delay_redirect INTEGER NOT NULL,
     avatar_text VARCHAR(500) NOT NULL,
+    avatar_image TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

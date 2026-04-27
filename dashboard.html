@@ -33,6 +33,7 @@
             companyName: 'Sua Empresa',
             delayRedirect: 3000,
             avatarText: 'Processando sua compra...',
+            avatarImage: null,
         };
 
         function Toast({ message, type, onClose }) {
@@ -77,6 +78,20 @@
                     ...prev,
                     [field]: value
                 }));
+            };
+
+            const handleAvatarChange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        setConfig(prev => ({
+                            ...prev,
+                            avatarImage: event.target.result
+                        }));
+                    };
+                    reader.readAsDataURL(file);
+                }
             };
 
             const handleSave = async () => {
@@ -257,6 +272,28 @@
                                         <h2 class="text-2xl font-bold text-gray-900 mb-4">Página de Compra</h2>
 
                                         <div>
+                                            <label class="block text-sm font-semibold text-gray-900 mb-2">
+                                                Foto do Avatar
+                                            </label>
+                                            <div class="flex items-center gap-4">
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={handleAvatarChange}
+                                                    class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                                />
+                                                {config.avatarImage && (
+                                                    <img
+                                                        src={config.avatarImage}
+                                                        alt="Avatar"
+                                                        class="w-16 h-16 rounded-lg object-cover border-2 border-blue-500"
+                                                    />
+                                                )}
+                                            </div>
+                                            <p class="text-xs text-gray-500 mt-1">Escolha uma imagem para o avatar (JPG, PNG, etc)</p>
+                                        </div>
+
+                                        <div class="mt-4">
                                             <label class="block text-sm font-semibold text-gray-900 mb-2">
                                                 Texto do Avatar
                                             </label>
