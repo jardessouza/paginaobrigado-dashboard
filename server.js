@@ -28,6 +28,61 @@ const DEFAULT_CONFIG = {
     companyName: 'Sua Empresa',
     delayRedirect: 3000,
     avatarText: 'Processando sua compra...',
+    avatarImage: null,
+};
+
+// ============================================
+// INICIALIZAR BANCO DE DADOS
+// ============================================
+
+const initDatabase = async () => {
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS pixel_config (
+                id SERIAL PRIMARY KEY,
+                conversion_id VARCHAR(255) NOT NULL,
+                conversion_label VARCHAR(255) NOT NULL,
+                redirect_url VARCHAR(500) NOT NULL,
+                purchase_value DECIMAL(10, 2) NOT NULL,
+                currency VARCHAR(3) NOT NULL,
+                company_name VARCHAR(255) NOT NULL,
+                delay_redirect INTEGER NOT NULL,
+                avatar_text VARCHAR(500) NOT NULL,
+                avatar_image TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        await pool.query(`
+            CREATE INDEX IF NOT EXISTS idx_pixel_config_updated_at
+            ON pixel_config(updated_at DESC);
+        `);
+
+        const result = await pool.query('SELECT COUNT(*) FROM pixel_config');
+        if (result.rows[0].count === '0') {
+            await pool.query(`
+                INSERT INTO pixel_config (
+                    conversion_id, conversion_label, redirect_url,
+                    purchase_value, currency, company_name,
+                    delay_redirect, avatar_text, updated_at
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+            `, [
+                DEFAULT_CONFIG.conversionId,
+                DEFAULT_CONFIG.conversionLabel,
+                DEFAULT_CONFIG.redirectUrl,
+                parseFloat(DEFAULT_CONFIG.purchaseValue),
+                DEFAULT_CONFIG.currency,
+                DEFAULT_CONFIG.companyName,
+                DEFAULT_CONFIG.delayRedirect,
+                DEFAULT_CONFIG.avatarText,
+            ]);
+        }
+
+        console.log('✅ Database initialized successfully');
+    } catch (error) {
+        console.error('❌ Database initialization error:', error);
+    }
 };
 
 // ============================================
@@ -169,8 +224,11 @@ app.get('/', (req, res) => {
 // START SERVER
 // ============================================
 
-app.listen(PORT, () => {
-    console.log(`
+(async () => {
+    await initDatabase();
+
+    app.listen(PORT, () => {
+        console.log(`
 ╔════════════════════════════════════════════════════════════════╗
 ║                                                                ║
 ║   📊 DASHBOARD SERVICE                                        ║
@@ -181,8 +239,9 @@ app.listen(PORT, () => {
 ║   💚 Health: http://localhost:${PORT}/health                   ║
 ║                                                                ║
 ╚════════════════════════════════════════════════════════════════╝
-    `);
-});
+        `);
+    });
+})();
 
 process.on('uncaughtException', (error) => {
     console.error('Erro não capturado:', error);
